@@ -1,0 +1,688 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+/* 전체 배경 */
+
+body {
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    background-color: #f5f6f8;
+    margin: 0;
+    padding: 30px;
+}
+
+
+/* 상단 제목 */
+
+.header {
+    max-width: 1400px;
+    margin: auto;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 34px;
+    margin-bottom: 5px;
+}
+
+.header p {
+    color: #777;
+    font-size: 16px;
+}
+
+
+/* 뉴스 그리드 */
+
+.news-grid {
+
+    max-width: 1400px;
+
+    margin: auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+
+/* 뉴스 카드 */
+
+.news-card {
+
+    background: white;
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    text-decoration: none;
+
+    color: black;
+
+    box-shadow:
+        0px 3px 12px
+        rgba(0,0,0,0.08);
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+
+    min-height: 300px;
+}
+
+
+/* 마우스 올렸을 때 */
+
+.news-card:hover {
+
+    transform:
+        translateY(-6px);
+
+    box-shadow:
+        0px 10px 25px
+        rgba(0,0,0,0.14);
+}
+
+
+/* 카드 내용 */
+
+.card-content {
+    padding: 22px;
+}
+
+
+/* 분야 */
+
+.category {
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    color: #777;
+
+    margin-bottom: 12px;
+}
+
+
+/* 제목 */
+
+.title {
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    margin-bottom: 15px;
+}
+
+
+/* 키워드 */
+
+.keywords {
+
+    font-size: 13px;
+
+    margin-bottom: 15px;
+
+    color: #555;
+}
+
+
+/* 요약 */
+
+.summary {
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    color: #555;
+}
+
+
+/* 중요도 */
+
+.importance {
+
+    display: inline-block;
+
+    margin-top: 15px;
+
+    padding:
+        6px 10px;
+
+    background:
+        #f0f1f3;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+
+/* 원문 보기 */
+
+.read-more {
+
+    margin-top: 18px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+
+/* 화면이 작아지면 2열 */
+
+@media
+(max-width: 1000px) {
+
+    .news-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+
+/* 휴대폰에서는 1열 */
+
+@media
+(max-width: 600px) {
+
+    .news-grid {
+        grid-template-columns:
+            1fr;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+<h1>Today's Key Issues</h1>
+
+<p>
+AI가 선정한 오늘의 주요 경제·산업 이슈
+&nbsp; | &nbsp;
+2026.09.14
+</p>
+
+</div>
+
+
+<div class="news-grid">
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMia0FVX3lxTE45SlU0NDlXZldqWWQzLVFkWTgtdkE3anRQV05OT3ZucWhWS3U5LUoyVW9QSTN0S0ZXWlp3VmlOZHFnY0FUZkFYN000RXNPOEJoNDhvV0E4cHZXRFBUSFMzM1Y5cTllSHBXZlRV?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+삼성중, 1조6476억원 ‘잭팟’…LNG선·원유운반선 2척 등 총 6척 수주 - 해사신문
+
+</div>
+
+
+<div class="keywords">
+
+#삼성중공업 #LNG운반선 #원유운반선
+
+</div>
+
+
+<div class="summary">
+
+삼성중공업이 LNG운반선과 원유운반선 2척을 포함해 총 6척을 1조6476억원에 수주했다. 고부가가치 LNG선 수주를 통해 조선업의 수주 경쟁력과 선박 수요 회복세를 재확인했다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 4/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE95NWV2NFcwSDJUTDZhT3FOTUVQV2x6ZGw2MkJjRGg2d0NtaGtxSkZBQ3B5ZXY4eFpMVVB4YzBCSkZ3Z2JyYzExWnlfSExHSkk?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+삼성중공업, LNG선 등 1.6조 수주…작년 상선 실적 넘었다 - v.daum.net
+
+</div>
+
+
+<div class="keywords">
+
+#삼성중공업 #LNG운반선 #선박 수주
+
+</div>
+
+
+<div class="summary">
+
+삼성중공업이 대형 LNG운반선 4척과 원유운반선 2척 등 총 6척을 1조6476억원에 수주했다. 이번 계약으로 올해 상선 수주 목표를 28% 초과 달성했으며, 지난해 상선 수주 실적도 넘어섰다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 4/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE5Fb3kyUlBWbGdTRVI4ZEpYOV84bDViRUNBQ25DSjVGbHNVYnhXYzBUcFFEN0RhOW1fZzY5b3liSFVCelg5VTZUX1k5Nlc4NU0?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+유례없는 초호황에 ‘조선의 심장’도 공급병목…세계 1위 中 주문 쇄도에 650억원 설비 투자 [그 회사 어때?] - v.daum.net
+
+</div>
+
+
+<div class="keywords">
+
+#조선업 호황 #공급병목 #중국 수주 #설비투자
+
+</div>
+
+
+<div class="summary">
+
+유례없는 조선업 호황으로 선박 핵심 부품·엔진 분야에서 공급 병목이 발생하고 있으며, 세계 1위 조선국인 중국의 주문이 관련 기업에 몰리고 있다. 해당 기업은 수요 확대에 대응하기 위해 약 650억원 규모의 설비 투자를 추진한다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 4/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiXkFVX3lxTE5ocFRObmNhYTZSQ0hKUUs1U0Jqc3hiMkYwckEtVlkybURNT0F0S0hMZURPejlMdmtjYVhNOU01WkYwbzlZYVdraGRMbWxjQ2VETXJocnJNS0NfQU1IeHc?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+국제
+
+</div>
+
+
+<div class="title">
+
+트럼프 "세계 최저 금리 적용 받아야"...USMCA 탈퇴 선 그어 한국 기업들 '안도' - YTN
+
+</div>
+
+
+<div class="keywords">
+
+#트럼프 #USMCA #금리 #통상 불확실성
+
+</div>
+
+
+<div class="summary">
+
+트럼프 대통령이 미국이 세계 최저 수준의 금리를 적용받아야 한다고 주장하는 한편, 북미 무역협정인 USMCA 탈퇴 가능성에는 선을 그었다. 이에 따라 미국·멕시코·캐나다 공급망에 진출한 한국 기업들은 통상 불확실성이 일부 완화될 것으로 기대된다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 3/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiYkFVX3lxTE8yNV9hVEVRSVVhV0ZlY0Z3dkd3MkIyWTV6UjhnMlJicVJtN29XRkQ2b1FJWExkRno4MjZSeEtnYmx5RzN1Rm5YNjU1RVNEMWJWVXNrVC02WEJmVEtpT29lNGpB0gFnQVVfeXFMTWszNnIxdGFZVVBoNFFtQ09QeXRBbUdwOVg4RmcyaFdtN3VUWUpBNFZwaG1yWmJLYmtvU0NDSklMUVM4aEtfVjNGUlBLczZFZHJVZm5lWm5ObFRwSHo1alJZM2t4dGpvdw?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+금융·증시
+
+</div>
+
+
+<div class="title">
+
+기준금리 올라도 거꾸로 내린 저축銀 예금금리…일부 은행보다 낮네 - 뉴스1
+
+</div>
+
+
+<div class="keywords">
+
+#저축은행 예금금리 #5대 은행 #역머니무브
+
+</div>
+
+
+<div class="summary">
+
+기준금리 인상에도 저축은행의 예금금리는 오히려 하락해 일부 상품이 시중은행보다 낮아졌다. 반면 5대 은행은 예금금리를 인상해 최고 연 3.60%를 제시하면서, 고금리 상품으로 자금이 이동하는 역머니무브 현상이 본격화될 가능성이 커지고 있다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 3/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE9jSkFZWU9WRnotZTlOQnFfU2twYlFjZ2t5eDVYVkpnX08tSWRmUV93eUNtc2VCa0I2QUo3QTlrdFZYaDdDQkpFOWNtNl92eXJhZko4TE85T19Edw?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+"67% 폭락에도 또?"…'AI 천재'가 SK하이닉스 다시 찍은 이유 [김주완의 글로벌 머니 X파일] - 한국경제
+
+</div>
+
+
+<div class="keywords">
+
+#SK하이닉스 #AI 반도체 #메모리 수요
+
+</div>
+
+
+<div class="summary">
+
+AI 분야의 유력 투자자가 주가가 67% 폭락한 이후에도 SK하이닉스를 다시 주목한 배경을 다룬 기사입니다. 인공지능 확산에 따른 메모리 반도체 수요와 SK하이닉스의 성장 가능성이 핵심 근거로 제시된 것으로 보입니다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 3/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMiTkFVX3lxTE15NWs0SzhEYmhwRmRodkJyakdOUDdXZXlCVWM4UTh3Nm9mU29VMHVjMW93MWQ3TXlzNHFlaERZWm51bG1EZEd1OUZnUHdidw?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+경남도 'K-조선 미래비전' 발맞춰 조선·해양 제조 AI 허브로 발돋움 - 전자신문
+
+</div>
+
+
+<div class="keywords">
+
+#경남도 #조선산업 #제조 AI
+
+</div>
+
+
+<div class="summary">
+
+경남도가 정부의 'K-조선 미래비전'에 발맞춰 조선·해양 제조 분야의 인공지능(AI) 허브로 도약을 추진한다는 내용이다. 지역 조선산업의 디지털 전환과 제조 경쟁력 강화를 통해 관련 기업과 산업 생태계의 고도화를 목표로 한다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 3/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+<a
+class="news-card"
+href="https://news.google.com/rss/articles/CBMidkFVX3lxTE1mT000M2RMZjNkYXdQWWg5UTJPSTM5OFJ3clp5ekRIbmNXakowMW15N3l0RmxYQkN5TzVhNUVaeDFsNmstamlDWGliTzhRaWswSVltZjNaaTl0SkhsNjFmbDRva2w1ZFRjMDZ0VUkwYmh0V3Z6amfSAWZBVV95cUxQT3BjbzBmOVRqYU52ck9MN3hLS29sN0xhdWZWZklTcTBJZ1RLd0VlcjR2a1l6c0VEODA4bEtfLTRQbC10dW9UMDQ2Umd1V2l0YWxqRU1DbFB6bmhlcWdYZThQRm5PbFE?oc=5"
+target="_blank"
+>
+
+<div class="card-content">
+
+<div class="category">
+
+산업
+
+</div>
+
+
+<div class="title">
+
+한화오션-HD현대, ‘가스텍’서 미래 조선 기술 경쟁 - 동아일보
+
+</div>
+
+
+<div class="keywords">
+
+#K조선 #부유식 데이터센터 #미래 조선 기술
+
+</div>
+
+
+<div class="summary">
+
+한화오션과 HD현대 등 국내 조선업체들이 가스텍에서 부유식 데이터센터, 해상 AI센터, 가스 플랜트 등 미래형 조선·해양 기술을 공개하며 차세대 사업 경쟁에 나섰다. 이는 전통적인 선박 건조를 넘어 에너지·디지털 인프라를 결합한 고부가가치 사업으로 영역을 확대하려는 흐름을 보여준다.
+
+</div>
+
+
+<div class="importance">
+
+AI 중요도 3/5
+
+</div>
+
+
+<div class="read-more">
+
+원문 뉴스 보기 →
+
+</div>
+
+
+</div>
+
+</a>
+
+
+
+</div>
+
+</body>
+
+</html>
