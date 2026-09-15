@@ -1,10 +1,13 @@
 name: Update AI News
 
 on:
-  schedule:
-    - cron: "17 22 * * *"
-
+  # 직접 테스트할 때 사용하는 버튼
   workflow_dispatch:
+
+  # 매일 자동 실행
+  schedule:
+    # UTC 22:10 = 한국시간 오전 7:10
+    - cron: "10 22 * * *"
 
 permissions:
   contents: read
@@ -12,10 +15,12 @@ permissions:
   id-token: write
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -28,29 +33,30 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run AI news agent
+      - name: Run AI News Agent
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python news_agent.py
 
-      - name: Setup Pages
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages artifact
+      - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
           path: "."
 
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: ubuntu-latest
-    needs: build
-
     steps:
-      - name: Deploy to GitHub Pages
+
+      - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4
