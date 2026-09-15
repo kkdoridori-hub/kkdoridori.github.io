@@ -73,17 +73,32 @@ def get_news(keyword):
             ""
         ).strip()
 
-        summary = re.sub(
-            r"<[^>]+>",
-            " ",
-            summary
-        )
+      summary = re.sub(
+    r"<[^>]+>",
+    " ",
+    summary
+)
 
-        summary = re.sub(
-            r"\s+",
-            " ",
-            summary
-        ).strip()
+# &nbsp; &amp; 같은 HTML 문자 변환
+summary = html.unescape(summary)
+
+# 남아 있는 nbsp 제거
+summary = summary.replace(
+    "\xa0",
+    " "
+)
+
+summary = summary.replace(
+    "&nbsp;",
+    " "
+)
+
+# 불필요한 공백 정리
+summary = re.sub(
+    r"\s+",
+    " ",
+    summary
+).strip()
 
         if not title or not link:
             continue
@@ -272,8 +287,25 @@ keywords:
 핵심 키워드 3개
 
 watch:
-앞으로 무엇을 지켜봐야 하는지 한 문장
+watch:
+이 뉴스가 앞으로 실제 경제·산업 변화로 이어지는지 판단하기 위해
+추적해야 할 구체적인 지표, 일정 또는 변수를 작성하세요.
 
+단순히 "후속 보도를 확인하세요",
+"향후 상황을 지켜봐야 합니다",
+"관련 동향을 주시해야 합니다"처럼
+모호한 표현은 절대 사용하지 마세요.
+
+가능하면 구체적인 경제지표, 가격, 기업실적,
+정책 일정, 수주, 투자액, 금리, 환율,
+원자재 가격 등 실제로 추적 가능한 변수를 제시하세요.
+
+예시:
+국제유가 뉴스 → "WTI 가격과 중동 원유 공급 차질, 미국 CPI"
+금리 뉴스 → "다음 FOMC와 미국 CPI, 10년물 국채금리"
+반도체 뉴스 → "빅테크 CAPEX와 HBM 수요, 반도체 기업 실적"
+조선 뉴스 → "신규 선박 발주량과 LNG선 선가, 조선사 수주잔고"
+환율 뉴스 → "원·달러 환율과 외국인 자금 흐름, 미국 금리"
 
 반드시 아래 JSON 형식만 출력하세요.
 JSON 이외의 설명은 절대 작성하지 마세요.
