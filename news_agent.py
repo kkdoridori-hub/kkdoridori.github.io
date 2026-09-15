@@ -15,11 +15,15 @@ from openai import OpenAI
 
 MODEL = "gpt-5.6-luna"
 
-FINAL_NEWS_COUNT = 8
-ARTICLES_PER_TOPIC = 4
+FINAL_COUNT = 8
+PER_QUERY = 4
 
 
-# 다양한 분야에서 뉴스 후보 수집
+# =========================================================
+# 뉴스 분야
+# 경제에 몰리지 않도록 분야별로 따로 수집
+# =========================================================
+
 TOPICS = {
 
     "경제·금융": [
@@ -29,13 +33,12 @@ TOPICS = {
 
     "산업": [
         "조선 해운 에너지 산업",
-        "자동차 배터리 산업",
-        "반도체 산업"
+        "자동차 배터리 산업"
     ],
 
     "기업": [
         "기업 투자 실적 M&A",
-        "한국 기업 해외투자"
+        "한국 기업 글로벌 투자"
     ],
 
     "AI·기술": [
@@ -44,18 +47,18 @@ TOPICS = {
     ],
 
     "국제": [
-        "글로벌 경제 국제정세",
-        "미국 중국 무역 관세"
+        "글로벌 국제 정세 무역",
+        "미국 중국 관세 무역"
     ],
 
     "사회·문화": [
         "한국 사회 문화 트렌드",
-        "콘텐츠 엔터테인먼트 소비 트렌드"
+        "콘텐츠 소비 문화 트렌드"
     ],
 
     "정책": [
         "정부 산업 정책 규제",
-        "경제 정책 기업 정책"
+        "정부 기업 경제 정책"
     ]
 }
 
@@ -66,7 +69,7 @@ client = OpenAI(
 
 
 # =========================================================
-# Google News 수집
+# 뉴스 가져오기
 # =========================================================
 
 def get_news(query, topic):
@@ -85,7 +88,7 @@ def get_news(query, topic):
 
     articles = []
 
-    for entry in feed.entries[:ARTICLES_PER_TOPIC]:
+    for entry in feed.entries[:PER_QUERY]:
 
         title = entry.get(
             "title",
@@ -102,15 +105,16 @@ def get_news(query, topic):
             ""
         ).strip()
 
-        # HTML 태그 제거
+        # HTML 제거
         summary = re.sub(
             r"<[^>]+>",
             " ",
             summary
         )
 
-        # HTML 특수문자 변환
-        summary = html.unescape(summary)
+        summary = html.unescape(
+            summary
+        )
 
         summary = summary.replace(
             "\xa0",
@@ -136,7 +140,7 @@ def get_news(query, topic):
             "title": title,
             "link": link,
             "summary": summary,
-            "source_topic": topic
+            "topic": topic
 
         })
 
@@ -148,7 +152,7 @@ def get_news(query, topic):
 # =========================================================
 
 print("=" * 60)
-print("STEP 1 - 다양한 분야 뉴스 수집")
+print("뉴스 수집 시작")
 print("=" * 60)
 
 all_articles = []
@@ -156,24 +160,22 @@ all_articles = []
 
 for topic, queries in TOPICS.items():
 
-    topic_count = 0
+    count = 0
 
     for query in queries:
 
         try:
 
-            articles = get_news(
+            news = get_news(
                 query,
                 topic
             )
 
             all_articles.extend(
-                articles
+                news
             )
 
-            topic_count += len(
-                articles
-            )
+            count += len(news)
 
         except Exception as e:
 
@@ -185,25 +187,17 @@ for topic, queries in TOPICS.items():
 
     print(
         topic,
-        ":",
-        topic_count,
+        count,
         "개"
     )
 
 
-print(
-    "전체:",
-    len(all_articles),
-    "개"
-)
-
-
 # =========================================================
-# 제목 중복 제거
+# 중복 제거
 # =========================================================
 
-unique_articles = []
-seen_titles = set()
+unique = []
+seen = set()
 
 
 for article in all_articles:
@@ -220,166 +214,98 @@ for article in all_articles:
         normalized
     ).lower()
 
-    if normalized in seen_titles:
+    if normalized in seen:
         continue
 
-    seen_titles.add(
-        normalized
-    )
-
-    unique_articles.append(
-        article
-    )
-
-
-print(
-    "중복 제거:",
-    len(unique_articles),
-    "개"
-)
+    seen.add(normalized)
+    unique.append(article)
 
 
 # =========================================================
-# 분야별 후보 균등 추출
+# 분야별 후보 균등하게 만들기
 # =========================================================
 
-balanced_candidates = []
+candidates = []
 
-topic_candidate_count = {}
+counts = {}
 
 
-for article in unique_articles:
+for article in unique:
 
-    topic = article[
-        "source_topic"
-    ]
+    topic = article["topic"]
 
-    current = topic_candidate_count.get(
+    current = counts.get(
         topic,
         0
     )
 
-    # 한 분야가 AI 후보를 독점하지 않게
-    # 분야별 최대 4개
+    # 분야별 후보 최대 4개
     if current >= 4:
         continue
 
-    balanced_candidates.append(
-        article
-    )
+    candidates.append(article)
 
-    topic_candidate_count[
-        topic
-    ] = current + 1
+    counts[topic] = current + 1
 
 
-# 최대 28개
-balanced_candidates = (
-    balanced_candidates[:28]
-)
+candidates = candidates[:28]
 
 
 print(
-    "AI 분석 후보:",
-    len(balanced_candidates),
-    "개"
+    "AI 후보:",
+    len(candidates)
 )
 
 
 # =========================================================
-# AI 전달용 기사 목록
+# AI에게 기사 전달
 # =========================================================
 
 article_text = ""
 
 
-for index, article in enumerate(
-    balanced_candidates
+for i, article in enumerate(
+    candidates
 ):
 
     article_text += f"""
 
-기사번호: {index}
+기사번호: {i}
 
-사전분류:
-{article["source_topic"]}
+분야:
+{article["topic"]}
 
-기사제목:
+제목:
 {article["title"]}
 
-기사내용:
-{article["summary"][:450]}
+내용:
+{article["summary"][:500]}
 
 """
 
 
 # =========================================================
-# AI 분석 프롬프트
+# AI 분석
 # =========================================================
 
 prompt = f"""
-당신은 매일 주요 이슈를 선별하고
-경제·산업적 의미를 설명하는
+당신은 오늘의 주요 뉴스 가운데
+사람들이 알아둘 가치가 높은 이슈를 선별하는
 뉴스 분석 AI입니다.
 
-아래 기사 후보 중
-오늘 알아둘 가치가 가장 높은
-뉴스 8개를 선정하세요.
+아래 기사 후보 중 정확히 8개를 선정하세요.
 
 
-=========================
-가장 중요한 선정 규칙
-=========================
+[선정 규칙]
 
-1.
-같은 사건 또는 사실상 같은 내용의 기사는
-반드시 하나만 선정하세요.
+경제 뉴스에 치우치지 마세요.
 
-2.
-경제 뉴스만 많이 선정하지 마세요.
+경제·금융은 최대 2개만 선정하세요.
 
-경제·금융 분야는
-최대 2개까지만 선정하세요.
+최종 8개에는 반드시 최소 4개 이상의
+서로 다른 분야가 포함되어야 합니다.
 
-3.
-최종 8개 뉴스에는
-최소 4개 이상의 서로 다른 분야가
-포함되어야 합니다.
-
-4.
-가능하면 다음 분야를 골고루 포함하세요.
-
-경제·금융
-산업
-기업
-AI·기술
-국제
-사회·문화
-정책
-
-5.
-단순 사건사고나 연예인의 사생활보다는
-사회 변화, 소비 트렌드, 산업 변화,
-기업 활동 등에 의미가 있는 뉴스를
-우선 선정하세요.
-
-6.
-단순히 제목이 자극적인 기사는
-선정하지 마세요.
-
-7.
-오늘 이후 경제·산업·기업 또는
-사람들의 생활에 영향을 줄 가능성이
-큰 뉴스를 우선하세요.
-
-
-=========================
-각 뉴스 분석 방법
-=========================
-
-category:
-
-다음 중 하나만 사용하세요.
+가능하면 다음 분야를 다양하게 선정하세요.
 
 경제·금융
 산업
@@ -390,145 +316,140 @@ AI·기술
 정책
 
 
-importance:
+같은 사건을 다룬 기사는
+하나만 선정하세요.
 
-1~5점으로 평가하세요.
+단순 연예인 사생활이나 단순 사건사고보다
 
-5:
-경제·산업·사회 흐름에
-매우 큰 영향을 줄 수 있음
+산업 변화
+기업 활동
+기술 변화
+사회 변화
+문화·소비 트렌드
+국제 정세
+정책 변화
 
-4:
-시장 또는 산업에
-의미 있는 영향을 줄 가능성이 높음
-
-3:
-알아둘 가치가 있는 주요 이슈
-
-2:
-참고 수준
-
-1:
-중요도가 낮음
+등 향후 영향을 생각해볼 수 있는
+뉴스를 우선하세요.
 
 
-importance_reason:
-
-중요도 점수를 준 이유를
-15자 안팎으로 짧게 작성하세요.
-
-예:
-
-금리·환율 동시 영향
-
-반도체 투자 확대 신호
-
-글로벌 공급망 영향
-
-소비 트렌드 변화
-
-기업 실적 영향
+[각 뉴스 작성 방법]
 
 
-headline:
+headline
 
-원문 제목을 그대로 복사하지 말고
-뉴스의 핵심을 이해할 수 있는
-짧은 제목으로 다시 작성하세요.
-
-
-points:
-
-기사에서 알아야 할 핵심 사실을
-3개로 작성하세요.
-
-각 항목은 짧고 구체적으로 작성하세요.
+원문 제목을 그대로 사용하지 말고
+핵심 내용을 쉽게 이해할 수 있는
+짧은 제목으로 작성하세요.
 
 
-why_important:
+points
+
+뉴스의 핵심 사실을
+3개의 짧은 문장으로 작성하세요.
+
+
+why_important
+
+가장 중요합니다.
 
 이 뉴스가 왜 중요한지를
-일반인도 이해할 수 있도록
-2문장 이내로 설명하세요.
+일반인이 이해할 수 있도록
+2~3문장으로 설명하세요.
 
-단순히
+기사 내용을 다시 요약하는 것이 아니라
 
-"중요한 이슈입니다"
-"영향을 미칠 수 있습니다"
+"이 일이 일어나면 무엇이 변하고,
+그 변화가 한국 경제·산업·기업 또는
+우리 생활에 어떤 영향을 줄 수 있는가"
 
-라고 끝내지 마세요.
-
-반드시
-
-원인
-→ 변화
-→ 한국 경제·산업·기업·생활에 미치는 영향
-
-의 관계를 설명하세요.
+를 설명하세요.
 
 
-예시 1:
+예시:
 
-미국 기준금리가 상승했다면
+미국 금리 인상
 
-"미국 금리가 오르면 달러 자산의 매력이 높아져
-원·달러 환율과 외국인 자금 흐름에 영향을 줄 수 있습니다.
-이는 국내 증시와 한국은행의 금리 결정에도 부담으로 작용할 수 있습니다."
-
-
-예시 2:
-
-국제유가가 급등했다면
-
-"유가 상승은 기업의 운송·생산비용을 높이고
-소비자물가 상승으로 이어질 수 있습니다.
-한국처럼 에너지 수입 의존도가 높은 국가에는
-무역수지와 물가 측면에서 부담이 될 수 있습니다."
+미국 금리가 오르면 달러 자산의 매력이 높아져
+원·달러 환율 상승과 외국인 자금 유출 압력이
+커질 수 있습니다. 이는 국내 증시뿐 아니라
+한국은행의 금리 결정에도 영향을 줄 수 있습니다.
 
 
-예시 3:
+국제유가 상승
 
-AI 데이터센터 투자가 확대됐다면
-
-"데이터센터 투자가 늘면
-반도체와 전력설비, 발전기, 냉각장치 등의
-수요가 함께 증가할 수 있습니다.
-관련 산업의 신규 수주와 설비투자로
-연결될 가능성이 있다는 점에서 중요합니다."
+국제유가가 오르면 기업의 운송비와 생산비가
+높아지고 소비자물가에도 상승 압력이 생깁니다.
+에너지 수입 의존도가 높은 한국에는
+무역수지 측면에서도 부담이 될 수 있습니다.
 
 
-keywords:
+AI 데이터센터 투자
+
+AI 데이터센터 투자가 확대되면
+반도체뿐 아니라 전력설비, 발전기,
+냉각장치 등의 수요도 함께 늘어날 수 있습니다.
+관련 기업의 투자와 수주 기회로 이어질 수 있습니다.
+
+
+문화 콘텐츠 해외 흥행
+
+한국 콘텐츠의 해외 소비가 늘어나면
+콘텐츠 제작사뿐 아니라 플랫폼, 광고,
+관광과 소비재 산업에도 파급효과가 나타날 수 있습니다.
+
+
+keywords
 
 핵심 키워드 3개를 작성하세요.
 
 
-=========================
-출력
-=========================
+category
 
-반드시 JSON만 출력하세요.
+아래 중 하나만 사용하세요.
+
+경제·금융
+산업
+기업
+AI·기술
+국제
+사회·문화
+정책
+
+
+[출력]
+
+JSON만 출력하세요.
 
 {{
-  "news": [
-    {{
-      "article_index": 0,
-      "category": "경제·금융",
-      "importance": 5,
-      "importance_reason": "금리·환율 동시 영향",
-      "headline": "미국 기준금리 추가 인상",
-      "points": [
-        "미국 기준금리가 추가 인상됐습니다",
-        "국채금리와 달러가 함께 강세를 보였습니다",
-        "글로벌 금융시장의 금리 부담이 커졌습니다"
-      ],
-      "why_important": "미국 금리가 오르면 달러 자산의 매력이 높아져 원·달러 환율과 외국인 자금 흐름에 영향을 줄 수 있습니다. 이는 국내 증시와 한국은행의 금리 결정에도 부담으로 작용할 수 있습니다.",
-      "keywords": [
-        "미국금리",
-        "환율",
-        "한국은행"
-      ]
-    }}
-  ]
+    "news": [
+
+        {{
+            "article_index": 0,
+
+            "category":
+            "AI·기술",
+
+            "headline":
+            "AI 데이터센터 투자 확대",
+
+            "points": [
+                "AI 인프라 투자가 확대되고 있습니다",
+                "데이터센터 건설 수요가 증가하고 있습니다",
+                "반도체와 전력설비 수요도 늘어날 전망입니다"
+            ],
+
+            "why_important":
+            "AI 데이터센터 투자가 확대되면 반도체뿐 아니라 전력설비와 발전기, 냉각장치 등의 수요도 함께 늘어날 수 있습니다. 관련 산업의 투자와 신규 수주 기회로 이어질 수 있다는 점에서 중요합니다.",
+
+            "keywords": [
+                "AI",
+                "데이터센터",
+                "반도체"
+            ]
+        }}
+
+    ]
 }}
 
 
@@ -542,20 +463,21 @@ keywords:
 # AI 실행
 # =========================================================
 
-print()
-print("=" * 60)
-print("STEP 2 - AI 핵심 이슈 분석")
-print("=" * 60)
-
-
 selected = []
 
 
 try:
 
+    print(
+        "AI 분석 시작"
+    )
+
     response = client.responses.create(
+
         model=MODEL,
+
         input=prompt
+
     )
 
     raw = response.output_text.strip()
@@ -576,7 +498,7 @@ try:
     if start == -1 or end == -1:
 
         raise ValueError(
-            "JSON 응답을 찾지 못했습니다."
+            "JSON을 찾을 수 없습니다."
         )
 
     data = json.loads(
@@ -589,9 +511,8 @@ try:
     )
 
     print(
-        "AI 분석 성공:",
-        len(selected),
-        "개"
+        "AI 선정:",
+        len(selected)
     )
 
 
@@ -606,7 +527,7 @@ except Exception as e:
 
 
 # =========================================================
-# AI가 8개 미만 반환했을 때 보충
+# AI 실패 시 분야별로 골고루 보충
 # =========================================================
 
 used_indexes = set()
@@ -629,56 +550,200 @@ for item in selected:
         pass
 
 
-if len(selected) < FINAL_NEWS_COUNT:
+# 분야별 기본 중요 이유
+DEFAULT_REASON = {
 
+    "경제·금융":
+    "금리와 환율, 금융시장의 변화는 기업의 자금조달 비용과 가계의 소비·투자에 영향을 줄 수 있습니다.",
+
+    "산업":
+    "산업 환경의 변화는 기업의 생산과 투자, 수주 및 공급망 변화로 이어질 수 있습니다.",
+
+    "기업":
+    "기업의 투자와 실적 변화는 고용과 설비투자뿐 아니라 관련 협력업체와 산업 전체에 영향을 줄 수 있습니다.",
+
+    "AI·기술":
+    "새로운 기술의 확산은 기업의 투자 방향과 생산성, 관련 산업의 수요 구조를 바꿀 수 있습니다.",
+
+    "국제":
+    "국제 정세와 무역 환경의 변화는 수출입과 환율, 글로벌 공급망을 통해 한국 기업에도 영향을 줄 수 있습니다.",
+
+    "사회·문화":
+    "사회와 소비 트렌드의 변화는 사람들이 돈을 쓰는 방식과 기업의 상품·서비스 전략을 바꿀 수 있습니다.",
+
+    "정책":
+    "정부 정책과 규제의 변화는 기업의 투자 판단과 비용, 시장 경쟁 환경에 직접적인 영향을 줄 수 있습니다."
+
+}
+
+
+# AI 결과가 부족하면 분야가 골고루 들어가게 추가
+if len(selected) < FINAL_COUNT:
+
+    selected_topics = {}
+
+
+    for item in selected:
+
+        topic = item.get(
+            "category",
+            ""
+        )
+
+        selected_topics[topic] = (
+            selected_topics.get(
+                topic,
+                0
+            )
+            + 1
+        )
+
+
+    # 먼저 분야별 하나씩 채움
     for index, article in enumerate(
-        balanced_candidates
+        candidates
     ):
+
+        if len(selected) >= FINAL_COUNT:
+            break
 
         if index in used_indexes:
             continue
 
+        topic = article["topic"]
+
+        # 경제는 최대 2개
+        if (
+            topic == "경제·금융"
+            and
+            selected_topics.get(
+                topic,
+                0
+            ) >= 2
+        ):
+            continue
+
+        # 다른 분야는 우선 1개씩
+        if (
+            topic != "경제·금융"
+            and
+            selected_topics.get(
+                topic,
+                0
+            ) >= 1
+        ):
+            continue
+
+
         selected.append({
 
             "article_index":
-                index,
+            index,
 
             "category":
-                article["source_topic"],
-
-            "importance":
-                3,
-
-            "importance_reason":
-                "오늘의 주요 이슈",
+            topic,
 
             "headline":
-                article["title"],
+            article["title"],
 
             "points": [
-                article["summary"][:130]
+                article["summary"][:140]
                 if article["summary"]
                 else article["title"]
             ],
 
             "why_important":
-                "오늘 주요 이슈로 선정된 뉴스입니다.",
+            DEFAULT_REASON.get(
+                topic,
+                "오늘 알아둘 가치가 있는 주요 이슈입니다."
+            ),
 
             "keywords": [
-                article["source_topic"]
+                topic
             ]
 
         })
 
+
         used_indexes.add(index)
 
-        if len(selected) >= FINAL_NEWS_COUNT:
+        selected_topics[topic] = (
+            selected_topics.get(
+                topic,
+                0
+            )
+            + 1
+        )
+
+
+# 아직 8개가 안 됐으면 추가
+if len(selected) < FINAL_COUNT:
+
+    for index, article in enumerate(
+        candidates
+    ):
+
+        if len(selected) >= FINAL_COUNT:
             break
 
+        if index in used_indexes:
+            continue
 
-selected = selected[
-    :FINAL_NEWS_COUNT
-]
+        topic = article["topic"]
+
+        if (
+            topic == "경제·금융"
+            and
+            selected_topics.get(
+                topic,
+                0
+            ) >= 2
+        ):
+            continue
+
+
+        selected.append({
+
+            "article_index":
+            index,
+
+            "category":
+            topic,
+
+            "headline":
+            article["title"],
+
+            "points": [
+                article["summary"][:140]
+                if article["summary"]
+                else article["title"]
+            ],
+
+            "why_important":
+            DEFAULT_REASON.get(
+                topic,
+                "오늘 알아둘 가치가 있는 주요 이슈입니다."
+            ),
+
+            "keywords": [
+                topic
+            ]
+
+        })
+
+
+        used_indexes.add(index)
+
+        selected_topics[topic] = (
+            selected_topics.get(
+                topic,
+                0
+            )
+            + 1
+        )
+
+
+selected = selected[:FINAL_COUNT]
 
 
 # =========================================================
@@ -704,15 +769,16 @@ for item in selected:
         if (
             article_index < 0
             or
-            article_index >= len(
-                balanced_candidates
-            )
+            article_index >= len(candidates)
         ):
+
             continue
 
-        article = balanced_candidates[
+
+        article = candidates[
             article_index
         ]
+
 
     except Exception:
 
@@ -726,7 +792,7 @@ for item in selected:
         str(
             item.get(
                 "category",
-                article["source_topic"]
+                article["topic"]
             )
         )
     )
@@ -742,21 +808,14 @@ for item in selected:
     )
 
 
-    reason = html.escape(
-        str(
-            item.get(
-                "importance_reason",
-                ""
-            )
-        )
-    )
-
-
-    why_important = html.escape(
+    why = html.escape(
         str(
             item.get(
                 "why_important",
-                ""
+                DEFAULT_REASON.get(
+                    article["topic"],
+                    ""
+                )
             )
         )
     )
@@ -767,36 +826,7 @@ for item in selected:
     )
 
 
-    try:
-
-        importance = int(
-            item.get(
-                "importance",
-                3
-            )
-        )
-
-    except Exception:
-
-        importance = 3
-
-
-    importance = max(
-        1,
-        min(
-            importance,
-            5
-        )
-    )
-
-
-    stars = (
-        "★" * importance
-        +
-        "☆" * (5 - importance)
-    )
-
-
+    # 키워드
     keywords = item.get(
         "keywords",
         []
@@ -818,12 +848,12 @@ for item in selected:
             str(keyword)
         )
 
-        for keyword
-        in keywords[:3]
+        for keyword in keywords[:3]
 
     )
 
 
+    # 핵심 내용
     points = item.get(
         "points",
         []
@@ -862,7 +892,9 @@ for item in selected:
             clean_point
         ).strip()
 
+
         points_html += (
+
             "<li>"
             +
             html.escape(
@@ -870,6 +902,7 @@ for item in selected:
             )
             +
             "</li>"
+
         )
 
 
@@ -879,6 +912,7 @@ for item in selected:
 
         <div class="card-inner">
 
+
             <div class="card-top">
 
                 <span class="number">
@@ -887,19 +921,6 @@ for item in selected:
 
                 <span class="category">
                     {category}
-                </span>
-
-            </div>
-
-
-            <div class="importance-row">
-
-                <span class="stars">
-                    {stars}
-                </span>
-
-                <span class="reason">
-                    {reason}
                 </span>
 
             </div>
@@ -920,14 +941,14 @@ for item in selected:
             </ul>
 
 
-            <div class="why">
+            <div class="why-box">
 
                 <div class="why-title">
                     왜 중요한가
                 </div>
 
                 <div class="why-text">
-                    {why_important}
+                    {why}
                 </div>
 
             </div>
@@ -941,6 +962,7 @@ for item in selected:
             >
                 원문 뉴스 보기 →
             </a>
+
 
         </div>
 
@@ -965,7 +987,7 @@ today = datetime.now(
 
 
 # =========================================================
-# HTML 페이지
+# 페이지 생성
 # =========================================================
 
 page = f"""
@@ -989,14 +1011,20 @@ Today's Key Issues
 
 <style>
 
+
 * {{
     box-sizing: border-box;
 }}
 
 
+/* 전체 화면 회색 */
+
 body {{
+
     margin: 0;
-    background: #f4f5f7;
+
+    background: #e9eaec;
+
     color: #151515;
 
     font-family:
@@ -1004,45 +1032,72 @@ body {{
         "Apple SD Gothic Neo",
         "Noto Sans KR",
         sans-serif;
+
 }}
 
 
 .container {{
+
     max-width: 1500px;
+
     margin: 0 auto;
-    padding: 45px 30px 70px;
+
+    padding:
+        45px 30px 70px;
+
 }}
 
 
+/* 상단 */
+
 .header {{
+
     margin-bottom: 32px;
+
 }}
 
 
 .header-label {{
-    color: #777;
+
+    color: #737373;
+
     font-size: 12px;
+
     font-weight: 700;
+
     letter-spacing: 2px;
+
     margin-bottom: 8px;
+
 }}
 
 
 .header h1 {{
+
     margin: 0;
+
     font-size: 42px;
+
     letter-spacing: -1px;
+
 }}
 
 
 .header-info {{
+
     margin-top: 12px;
-    color: #777;
+
+    color: #686868;
+
     font-size: 14px;
+
 }}
 
 
+/* 카드 배치 */
+
 .grid {{
+
     display: grid;
 
     grid-template-columns:
@@ -1052,43 +1107,40 @@ body {{
         );
 
     gap: 20px;
+
 }}
 
 
+/* 카드 */
+
 .card {{
-    background: white;
+
+    background: #ffffff;
+
     border-radius: 18px;
 
     box-shadow:
-        0 4px 16px
-        rgba(0,0,0,0.07);
+        0 5px 18px
+        rgba(0,0,0,0.08);
 
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}}
-
-
-.card:hover {{
-    transform: translateY(-4px);
-
-    box-shadow:
-        0 12px 28px
-        rgba(0,0,0,0.11);
 }}
 
 
 .card-inner {{
-    padding: 22px;
 
     height: 100%;
 
+    padding: 22px;
+
     display: flex;
+
     flex-direction: column;
+
 }}
 
 
 .card-top {{
+
     display: flex;
 
     justify-content:
@@ -1096,169 +1148,213 @@ body {{
 
     align-items: center;
 
-    margin-bottom: 14px;
+    margin-bottom: 20px;
+
 }}
 
 
 .number {{
+
     color: #aaa;
+
     font-size: 12px;
+
     font-weight: 700;
+
 }}
 
 
 .category {{
-    background: #f1f2f4;
 
-    padding: 6px 10px;
+    background: #f0f1f2;
+
+    padding:
+        6px 10px;
 
     border-radius: 20px;
 
     font-size: 12px;
+
     font-weight: 700;
+
 }}
 
 
-.importance-row {{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    margin-bottom: 14px;
-}}
-
-
-.stars {{
-    font-size: 14px;
-    white-space: nowrap;
-}}
-
-
-.reason {{
-    color: #777;
-    font-size: 12px;
-}}
-
+/* 제목 */
 
 .card h2 {{
-    margin: 0 0 12px;
+
+    margin:
+        0 0 12px;
 
     font-size: 20px;
+
     line-height: 1.4;
 
     letter-spacing: -0.5px;
+
 }}
 
 
+/* 키워드 */
+
 .keywords {{
+
     color: #777;
 
     font-size: 12px;
+
     line-height: 1.5;
 
-    margin-bottom: 16px;
+    margin-bottom: 17px;
+
 }}
 
 
+/* 핵심 요약 */
+
 .points {{
+
     padding-left: 19px;
 
     margin:
-        0 0 18px;
+        0 0 20px;
+
 }}
 
 
 .points li {{
+
     color: #444;
 
     font-size: 14px;
-    line-height: 1.5;
+
+    line-height: 1.55;
 
     margin-bottom: 7px;
+
 }}
 
 
-.why {{
-    background: #f6f7f8;
+/* 왜 중요한가 */
+
+.why-box {{
+
+    background: #f3f4f5;
 
     border-radius: 11px;
 
     padding: 14px;
 
     margin-top: auto;
+
 }}
 
 
 .why-title {{
-    font-size: 11px;
 
-    color: #777;
+    color: #666;
+
+    font-size: 11px;
 
     font-weight: 700;
 
-    margin-bottom: 6px;
+    margin-bottom: 7px;
+
 }}
 
 
 .why-text {{
+
+    color: #222;
+
     font-size: 13px;
-    line-height: 1.55;
+
+    line-height: 1.6;
+
 }}
 
 
+/* 링크 */
+
 .news-link {{
+
     display: block;
 
-    margin-top: 15px;
+    margin-top: 16px;
 
     color: #111;
 
     font-size: 12px;
+
     font-weight: 700;
 
     text-decoration: none;
+
 }}
 
 
 .news-link:hover {{
+
     text-decoration: underline;
+
 }}
 
+
+/* 태블릿 */
 
 @media
 (max-width: 1100px) {{
 
     .grid {{
+
         grid-template-columns:
             repeat(
                 2,
                 minmax(0,1fr)
             );
+
     }}
 
 }}
 
+
+/* 모바일 */
 
 @media
 (max-width: 650px) {{
 
     .container {{
+
         padding:
             28px 15px 50px;
+
     }}
 
 
     .header h1 {{
+
         font-size: 30px;
+
+    }}
+
+
+    .header-info {{
+
+        line-height: 1.6;
+
     }}
 
 
     .grid {{
+
         grid-template-columns:
             1fr;
+
     }}
 
 }}
+
 
 </style>
 
@@ -1273,17 +1369,24 @@ body {{
 
 <header class="header">
 
+
     <div class="header-label">
+
         DAILY AI BRIEFING
+
     </div>
 
+
     <h1>
+
         TODAY'S KEY ISSUES
+
     </h1>
+
 
     <div class="header-info">
 
-        AI가 선별한 오늘의 주요 이슈
+        AI가 선별한 오늘의 핵심 이슈
 
         &nbsp; | &nbsp;
 
@@ -1294,6 +1397,7 @@ body {{
         {valid_count} ISSUES
 
     </div>
+
 
 </header>
 
@@ -1315,7 +1419,7 @@ body {{
 
 
 # =========================================================
-# index.html 저장
+# index.html 생성
 # =========================================================
 
 with open(
@@ -1329,7 +1433,7 @@ with open(
 
 print()
 print("=" * 60)
-print("완료")
+print("사이트 생성 완료")
 print("날짜:", today)
-print("카드:", valid_count)
+print("뉴스:", valid_count)
 print("=" * 60)
